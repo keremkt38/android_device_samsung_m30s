@@ -9,9 +9,7 @@ on late-init
 
 on fs
     export ANDROID_ROOT /system_root
-    wait /dev/block/platform/13520000.ufs
-    symlink /dev/block/platform/13520000.ufs /dev/block/bootdevice
-    symlink /dev/block/platform/13520000.ufs/by-name /dev/block/by-name
+    symlink /dev/block/by-name/${ro.boot.super_partition} /dev/block/by-name/super
     start hwservicemanager
 
 service hwservicemanager /system/bin/hwservicemanager
