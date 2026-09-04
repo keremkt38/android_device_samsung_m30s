@@ -8,13 +8,10 @@
 /up_param          emmc        /dev/block/platform/13520000.ufs/by-name/up_param          flags=display="Splash Image";backup=1;flashimg=1
 
 /system            ext4        system                                                        flags=display="System";backup=1;logical;first_stage_mount;wipeingui
-/system            erofs       system                                                        flags=display="System";backup=1;logical;first_stage_mount;fsflags="ro,wait";wipeingui
 
 /vendor            ext4        vendor                                                        flags=display="Vendor";backup=1;logical;first_stage_mount;wipeingui
-/vendor            erofs       vendor                                                        flags=display="Vendor";backup=1;logical;first_stage_mount;fsflags="ro,wait";wipeingui
 
 /product           ext4        product                                                       flags=display="Product";backup=1;logical;first_stage_mount;wipeingui
-/product           erofs       product                                                       flags=display="Product";backup=1;logical;first_stage_mount;fsflags="ro,wait";wipeingui
 
 /omr               ext4        /dev/block/platform/13520000.ufs/by-name/omr               flags=display="OMR";backup=1;wipeingui
 
