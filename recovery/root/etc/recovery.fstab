@@ -1,32 +1,33 @@
 # Android/TWRP fstab
 # <mount_point>    <fstype>    <device>                                                   <flags>
 
+# Physical partitions
 /boot              emmc        /dev/block/platform/13520000.ufs/by-name/boot              flags=display="Kernel Image";backup=1;flashimg=1
 /recovery          emmc        /dev/block/platform/13520000.ufs/by-name/recovery          flags=display="Recovery Image";backup=1;flashimg=1
 /dtb               emmc        /dev/block/platform/13520000.ufs/by-name/dtb               flags=display="DTB Image";backup=1;flashimg=1
 /dtbo              emmc        /dev/block/platform/13520000.ufs/by-name/dtbo              flags=display="DTBO Image";backup=1;flashimg=1
 /up_param          emmc        /dev/block/platform/13520000.ufs/by-name/up_param          flags=display="Splash Image";backup=1;flashimg=1
 
-/system            ext4        system                                                        flags=display="System";backup=1;logical;first_stage_mount;wipeingui
+# Retrofit Dynamic Partitions
+/system            ext4        system                                                       flags=display="System";backup=1;logical;wipeingui
+/vendor            ext4        vendor                                                       flags=display="Vendor";backup=1;logical;wipeingui
+/product           ext4        product                                                      flags=display="Product";backup=1;logical;wipeingui
+/system_ext        ext4        system_ext                                                   flags=display="System Ext";backup=1;logical;wipeingui
 
-/vendor            ext4        vendor                                                        flags=display="Vendor";backup=1;logical;first_stage_mount;wipeingui
-
-/product           ext4        product                                                       flags=display="Product";backup=1;logical;first_stage_mount;wipeingui
-
-/omr               ext4        /dev/block/platform/13520000.ufs/by-name/omr               flags=display="OMR";backup=1;wipeingui
-
+# Physical / raw image entries
 /system_image      emmc        /dev/block/platform/13520000.ufs/by-name/system            flags=display="System Image";backup=1;flashimg=1
 /vendor_image      emmc        /dev/block/platform/13520000.ufs/by-name/vendor            flags=display="Vendor Image";backup=1;flashimg=1
 /product_image     emmc        /dev/block/platform/13520000.ufs/by-name/product           flags=display="Product Image";backup=1;flashimg=1
 /omr_image         emmc        /dev/block/platform/13520000.ufs/by-name/omr               flags=display="OMR Image";backup=1;flashimg=1
 
+# Physical partitions
+/omr               ext4        /dev/block/platform/13520000.ufs/by-name/omr               flags=display="OMR";backup=1;wipeingui
 /cache             ext4        /dev/block/platform/13520000.ufs/by-name/cache             flags=display="Cache";backup=1;wipeingui
 /efs               ext4        /dev/block/platform/13520000.ufs/by-name/efs               flags=display="EFS";backup=1
 /sec_efs           ext4        /dev/block/platform/13520000.ufs/by-name/sec_efs           flags=display="Sec EFS";backup=1
-
 /data              f2fs        /dev/block/platform/13520000.ufs/by-name/userdata          flags=display="Data";backup=1;wipeingui
-
 /misc              emmc        /dev/block/platform/13520000.ufs/by-name/misc             flags=display="Misc"
 
+# External storage
 /external_sd       auto        /dev/block/mmcblk0p1                                           /dev/block/mmcblk0 flags=display="Micro SDcard";storage;removable;wipeingui
 /usb-otg           auto        /dev/block/sdf1                                                /dev/block/sdf    flags=display="USB-OTG";storage;removable;wipeingui
