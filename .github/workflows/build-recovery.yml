@@ -1,0 +1,105 @@
+name: Build TWRP Recovery (12.1)
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release etiketi (bos birakirsan twrp-12.1-<run_number>)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+env:
+  MANIFEST_URL: https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git
+  MANIFEST_BRANCH: twrp-12.1
+  DEVICE_PATH: device/samsung/m30s
+  LUNCH_TARGET: twrp_m30s-eng
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 300
+
+    steps:
+    - name: Disk alani ac
+      uses: jlumbroso/free-disk-space@v1.3.1
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: false
+        swap-storage: true
+
+    - name: Cihaz agacini klonla
+      uses: actions/checkout@v4
+      with:
+        path: device_tree
+
+    - name: Bagimliliklari yukle
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git-core gnupg flex bison build-essential zip curl \
+          zlib1g-dev libc6-dev-i386 libncurses5 x11proto-core-dev libx11-dev \
+          libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3 \
+          python-is-python3 bc lz4 cpio ccache
+        mkdir -p ~/bin
+        curl -s https://storage.googleapis.com/git-repo-downloads/repo -o ~/bin/repo
+        chmod a+x ~/bin/repo
+        echo "$HOME/bin" >> "$GITHUB_PATH"
+
+    - name: TWRP 12.1 manifest'ini cek
+      run: |
+        git config --global user.name "keremkt38"
+        git config --global user.email "317968760+keremkt38@users.noreply.github.com"
+        mkdir -p ~/twrp && cd ~/twrp
+        repo init --depth=1 -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
+        repo sync -c -j"$(nproc)" --force-sync --no-clone-bundle --no-tags
+
+    - name: Cihaz agacini yerlestir
+      run: |
+        mkdir -p ~/twrp/$DEVICE_PATH
+        cp -a "$GITHUB_WORKSPACE"/device_tree/. ~/twrp/$DEVICE_PATH/
+        rm -rf ~/twrp/$DEVICE_PATH/.git ~/twrp/$DEVICE_PATH/.github
+
+    - name: Recovery build et
+      run: |
+        cd ~/twrp
+        export ALLOW_MISSING_DEPENDENCIES=true
+        export LC_ALL=C
+        set +u
+        source build/envsetup.sh
+        lunch "$LUNCH_TARGET"
+        mka -j"$(nproc)" recoveryimage
+
+    - name: Ciktilari hazirla
+      id: out
+      run: |
+        OUT=~/twrp/out/target/product/m30s
+        mkdir -p "$GITHUB_WORKSPACE/release"
+        cp "$OUT/recovery.img" "$GITHUB_WORKSPACE/release/recovery.img"
+        cd "$GITHUB_WORKSPACE/release"
+        # Odin ile flashlamak icin tar
+        tar -H ustar -c recovery.img > TWRP_m30s_recovery.tar
+        md5sum recovery.img TWRP_m30s_recovery.tar > checksums.md5
+        ls -la
+        TAG="${{ inputs.release_tag }}"
+        [ -z "$TAG" ] && TAG="twrp-12.1-${{ github.run_number }}"
+        echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+    - name: Releases'e yukle
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.out.outputs.tag }}
+        name: TWRP 12.1 m30s - ${{ steps.out.outputs.tag }}
+        body: |
+          TWRP 12.1 (minimal-manifest-twrp / twrp-12.1) recovery, Samsung Galaxy M30s.
+          Kernel: Argaeus 4.14.357 (permissive).
+          - `recovery.img`: dogrudan flash icin
+          - `TWRP_m30s_recovery.tar`: Odin (AP) icin
+        files: |
+          release/recovery.img
+          release/TWRP_m30s_recovery.tar
+          release/checksums.md5
